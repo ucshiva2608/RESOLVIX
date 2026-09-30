@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ARES — Autonomous Response Engineering System</title>
+  <meta name="description" content="ARES: AI-powered Autonomous Incident Investigation and Safe Remediation Platform. Detect. Investigate. Decide. Act. Verify.">
+  <!-- Modern Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="dark-theme">
+
+  <!-- TOP APP BAR -->
+  <header class="app-header">
+    <div class="header-brand">
+      <div class="brand-logo-container">
+        <span class="brand-shield">🛡️</span>
+        <div class="brand-glow"></div>
+      </div>
+      <div>
+        <div class="brand-title">ARES</div>
+        <div class="brand-tagline">Autonomous Response Engineering System</div>
+      </div>
+      <div class="system-tagline-motto">Detect. Investigate. Decide. Act. Verify.</div>
+    </div>
+
+    <!-- Cluster Global Health & Status Badges -->
+    <div class="header-status-group">
+      <div class="status-pill status-healthy" id="system-status-pill">
+        <span class="status-dot"></span>
+        <span id="system-status-text">SYSTEM HEALTHY</span>
+      </div>
+
+      <div class="incident-badge-pill" id="incident-id-badge">
+        <span class="badge-label">INCIDENT:</span>
+        <span class="badge-value" id="header-incident-id">NO ACTIVE INCIDENT</span>
+      </div>
+
+      <div class="severity-pill" id="header-severity-pill" style="display:none;">
+        <span id="header-severity-text">CRITICAL</span>
+      </div>
+
+      <!-- Token Quick Counter -->
+      <div class="header-token-counter" onclick="openTokenModal()">
+        <span class="token-coin">⚡</span>
+        <div class="token-values">
+          <span class="token-bal" id="header-token-bal">10,000</span>
+          <span class="token-lbl">TOKENS AVAIL</span>
+        </div>
+      </div>
+
+      <div class="policy-gate-pill">
+        <span class="policy-icon">🛡️</span>
+        <span>POLICY: <b class="text-neon-green">ENFORCED</b></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- MISSION CONTROL CONTROLS & ACTION BAR -->
+  <div class="control-bar">
+    <div class="control-actions-left">
+      <!-- One-Click Hackathon Demo Button -->
+      <button class="btn btn-demo-glow" id="btn-demo-start" onclick="startAresDemo()">
+        <span class="btn-icon">⚡</span>
+        <span class="btn-text">START ARES DEMO</span>
+      </button>
+
+      <div class="divider-vertical"></div>
+
+      <!-- Inject Dropdown / Scenario Buttons -->
+      <button class="btn btn-danger" id="btn-inject-db" onclick="injectFailure('database_failure')">
+        <span class="btn-icon">🔴</span>
+        <span>Inject DB Failure</span>
+      </button>
+
+      <button class="btn btn-warning" id="btn-inject-api" onclick="injectFailure('api_failure')">
+        <span class="btn-icon">⚠️</span>
+        <span>Inject API Failure</span>
+      </button>
+
+      <button class="btn btn-secondary" id="btn-inject-latency" onclick="injectFailure('high_latency')">
+        <span class="btn-icon">⏳</span>
+        <span>Inject High Latency</span>
+      </button>
+
+      <div class="toggle-container" title="Simulates a verification failure on the first pass to demonstrate autonomous replanning">
+        <label class="switch">
+          <input type="checkbox" id="toggle-sim-fail">
+          <span class="slider round"></span>
+        </label>
+        <span class="toggle-label">Demo Replan Loop</span>
+      </div>
+    </div>
+
+    <div class="control-actions-right">
+      <button class="btn btn-outline" onclick="openPostmortemModal()" id="btn-view-postmortem" style="display:none;">
+        <span>📋 View Postmortem</span>
+      </button>
+      <button class="btn btn-outline" onclick="openAuditModal()">
+        <span>📜 Audit Log</span>
+      </button>
+      <button class="btn btn-outline" onclick="openTokenModal()">
+        <span>💳 Token History</span>
+      </button>
+      <button class="btn btn-reset" onclick="resetSystem()">
+        <span>🔄 Reset System</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- MAIN SRE MISSION CONTROL DASHBOARD -->
+  <main class="dashboard-grid">
+
+    <!-- LEFT COLUMN: LIVE REASONING, FLOWCHART & AGENT ACTIVITIES -->
+    <div class="dash-column col-main">
+
+      <!-- WHAT IS ARES DOING NOW? (LIVE DYNAMIC EXPLANATION BOX) -->
+      <section class="card current-activity-card" id="activity-box">
+        <div class="activity-header">
+          <div class="activity-title-group">
+            <span class="activity-pulse-icon" id="activity-icon">🧠</span>
+            <span class="card-title">ARES CURRENT ACTIVITY</span>
+          </div>
+          <span class="stage-tag" id="current-stage-tag">STAGE: IDLE MONITORING</span>
+        </div>
+        <div class="activity-body">
+          <div class="activity-objective" id="activity-objective">
+            Cluster is healthy. Baseline monitoring active. Awaiting failure injection or anomaly trigger.
+          </div>
+          <div class="activity-details-grid">
+            <div class="activity-col">
+              <span class="act-col-lbl">EVIDENCE BEING ANALYZED</span>
+              <div class="act-col-val" id="act-evidence-val">• All microservices reporting HTTP 200 OK</div>
+            </div>
+            <div class="activity-col">
+              <span class="act-col-lbl">NEXT WORKFLOW STEP</span>
+              <div class="act-col-val" id="act-next-step">• Continuous background telemetry ingestion</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- HUMAN APPROVAL GATE PANEL (HIGHLIGHTED WHEN APPROVAL REQUIRED) -->
+      <section class="card approval-gate-card" id="approval-gate-panel" style="display: none;">
+        <div class="approval-header">
+          <div class="approval-title-wrap">
+            <span class="gate-icon-pulse">⏸️</span>
+            <div>
+              <div class="gate-title">HUMAN APPROVAL REQUIRED</div>
+              <div class="gate-subtitle">Safety Policy Gate Enforced: High-risk action cannot execute autonomously</div>
+            </div>
+          </div>
+          <span class="badge-risk-high" id="approval-risk-badge">RISK: 🔴 HIGH</span>
+        </div>
+
+        <div class="approval-content">
+          <div class="approval-meta-row">
+            <div class="appr-meta-item">
+              <span class="meta-k">DETECTED PROBLEM:</span>
+              <span class="meta-v text-highlight" id="appr-problem">Database Connection Pool Saturation</span>
+            </div>
+            <div class="appr-meta-item">
+              <span class="meta-k">PROPOSED ACTION:</span>
+              <span class="meta-v text-code" id="appr-action">restart_database()</span>
+            </div>
+          </div>
+
+          <div class="approval-risk-reason" id="appr-reason">
+            <b>Blast Radius Analysis:</b> Restarting the database terminates active transactions and temporarily interrupts dependent services.
+          </div>
+
+          <div class="expected-recovery-box">
+            <span class="exp-title">TARGET RECOVERY SLA:</span>
+            <div class="exp-metrics" id="appr-expected-metrics">
+              <span>DB Connections: 99/100 → 24/100</span>
+              <span>API Error Rate: 62.4% → &lt;1.0%</span>
+              <span>Latency: 7800ms → 190ms</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="approval-actions-bar">
+          <button class="btn btn-approve-glow" onclick="submitApproval()">
+            <span>✓ APPROVE &amp; EXECUTE</span>
+          </button>
+          <button class="btn btn-reject" onclick="rejectApproval()">
+            <span>✕ REJECT PLAN</span>
+          </button>
+          <button class="btn btn-outline" onclick="scrollToEvidence()">
+            <span>🔍 View Supporting Evidence</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- ARES INCIDENT RESOLUTION FLOW (INTERACTIVE FLOWCHART) -->
+      <section class="card flow-card">
+        <div class="card-header-flex">
+          <div>
+            <h2 class="card-title">ARES INCIDENT RESOLUTION FLOW</h2>
+            <span class="card-subtitle">Real-time Autonomous Decision Graph &amp; Policy Guardrails</span>
+          </div>
+          <div class="flow-legend">
+            <span class="legend-item"><span class="legend-dot status-done"></span> Completed</span>
+            <span class="legend-item"><span class="legend-dot status-active"></span> Active</span>
+            <span class="legend-item"><span class="legend-dot status-pending"></span> Pending</span>
+            <span class="legend-item"><span class="legend-dot status-failed"></span> Replan</span>
+          </div>
+        </div>
+
+        <!-- FLOWCHART NODES WRAPPER -->
+        <div class="flowchart-container" id="ares-flowchart">
+          <!-- Stage 1 -->
+          <div class="flow-node" id="node-DETECTION">
+            <div class="node-icon">🔴</div>
+            <div class="node-text">
+              <div class="node-name">Incident Detected</div>
+              <div class="node-state">○ Pending</div>
+            </div>
+          </div>
+          <div class="flow-connector" id="conn-1"></div>
+
+          <!-- Stage 2 -->
+          <div class="flow-node" id="node-TELEMETRY_COLLECTION">
+            <div class="node-icon">🔍</div>
+            <div class="node-text">
+              <div class="node-name">Telemetry Collection</div>
+              <div class="node-state">○ Pending</div>
+            </div>
+          </div>
+          <div class="flow-connector" id="conn-2"></div>
+
+          <!-- Stage 3 -->
+          <div class="flow-node" id="node-COMPETING_HYPOTHESES">
+            <div class="node-icon">💡</div>
+            <div class="node-text">
+              <div class="node-name">Competing Hypotheses</div>
+              <div class="node-state">○ Pending</div>
+            </div>
+          </div>
+          <div class="flow-connector" id="conn-3"></div>
+
+          <!-- Stage 4 -->
+          <div class="flow-node" id="node-RUNBOOK_SEARCH">
+            <div class="node-icon">📚</div>
+            <div class="node-text">
+              <div class="node-name">Runbook Search</div>
+              <div class="node-state">○ Pending</div>
+            </div>
+          </div>
+          <div class="flow-connector" id="conn-4"></div>
+
+          <!-- Stage 5 -->
+          <div class="flow-node" id="node-ROOT_CAUSE_ANALYSIS">
+            <div class="node-icon">🎯</div>
+            <div class="node-text">
+              <div class="node-name">Root Cause Analysis</div>
+              <div class="node-state">○ Pending</div>
+            </div>
+          </div>
+          <div class="flow-connector" id="conn-5"></div>
+
+          <!-- Stage 6 -->
+          <div class="flow-node" id="node-RECOVERY_PLANNING">
+            <div class="node-icon">🛠️</div>
+            <div class="node-text">
+              <div class="node-name">Recovery Plan &amp; Risk</div>
+              <div class="node-state">○ Pending</div>
+            </div>
+          </div>
+          <div class="flow-connector" id="conn-6"></div>
+
+          <!-- Stage 7 -->
+          <div class="flow-node node-gate" id="node-HUMAN_APPROVAL">
+            <div class="node-icon">⏸️</div>
+            <div class="node-text">
+              <div class="node-name">Human Approval Gate</div>
+              <div class="node-state">○ Pending</div>
+            </div>
+          </div>
+          <div class="flow-connector" id="conn-7"></div>
+
+          <!-- Stage 8 -->
+          <div class="flow-node" id="node-REMEDIATION">
+            <div class="node-icon">⚙️</div>
+            <div class="node-text">
+              <div class="node-name">Remediation Executed</div>
+              <div class="node-state">○ Pending</div>
+            </div>
+          </div>
+          <div class="flow-connector" id="conn-8"></div>
+
+          <!-- Stage 9 -->
+          <div class="flow-node" id="node-POST_REMEDIATION_VERIFICATION">
+            <div class="node-icon">🔎</div>
+            <div class="node-text">
+              <div class="node-name">Verification Agent</div>
+              <div class="node-state">○ Pending</div>
+            </div>
+          </div>
+          <div class="flow-connector" id="conn-9"></div>
+
+          <!-- Stage 10 (Branch: Success or Replan) -->
+          <div class="flow-node node-success" id="node-POSTMORTEM">
+            <div class="node-icon">🟢</div>
+            <div class="node-text">
+              <div class="node-name">Recovery Verified</div>
+              <div class="node-state">○ Pending</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- REPLAN STATUS BANNER (SHOWN IF REPLANNING OCCURS) -->
+        <div class="replan-alert-box" id="replan-banner" style="display:none;">
+          <span class="replan-icon">🔄</span>
+          <div class="replan-info">
+            <span class="replan-title">VERIFICATION FAILED → AUTONOMOUS REPLANNING IN PROGRESS</span>
+            <span class="replan-desc" id="replan-desc">Recovery criteria not met. Re-investigating signals with updated evidence.</span>
+          </div>
+          <span class="replan-badge" id="replan-badge-count">Attempt 1 / 3</span>
+        </div>
+      </section>
+
+      <!-- BEFORE vs AFTER ERROR RESOLUTION PANEL -->
+      <section class="card before-after-card" id="before-after-panel">
+        <div class="card-header-flex">
+          <div>
+            <h2 class="card-title">ERROR RESOLUTION — BEFORE vs AFTER DIFFERENTIAL</h2>
+            <span class="card-subtitle">Real-time SLA Restoration Differential Analysis</span>
+          </div>
+          <span class="recovery-status-pill" id="recovery-status-pill">Baseline Monitoring</span>
+        </div>
+
+        <div class="resolution-grid">
+          <!-- BEFORE BOX -->
+          <div class="resolution-box before-box">
+            <div class="box-badge badge-before">1. BEFORE INCIDENT FIX</div>
+            <div class="diff-metrics-list">
+              <div class="diff-item">
+                <span class="diff-label">API Error Rate</span>
+                <span class="diff-value-red" id="before-metric-error">0.2%</span>
+              </div>
+              <div class="diff-item">
+                <span class="diff-label">DB Connections</span>
+                <span class="diff-value-red" id="before-metric-db">24 / 100</span>
+              </div>
+              <div class="diff-item">
+                <span class="diff-label">Response Time</span>
+                <span class="diff-value-red" id="before-metric-resp">185 ms</span>
+              </div>
+              <div class="diff-item">
+                <span class="diff-label">Query Latency</span>
+                <span class="diff-value-red" id="before-metric-latency">180 ms</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ARES ACTION MIDDLE ARROW -->
+          <div class="resolution-action-middle">
+            <div class="action-arrow-down">⬇️</div>
+            <div class="action-pill-name" id="diff-action-name">restart_database()</div>
+            <span class="action-subtext">Safe Predefined Tool</span>
+          </div>
+
+          <!-- AFTER BOX -->
+          <div class="resolution-box after-box">
+            <div class="box-badge badge-after">2. AFTER ARES REMEDIATION</div>
+            <div class="diff-metrics-list">
+              <div class="diff-item">
+                <span class="diff-label">API Error Rate</span>
+                <span class="diff-value-green" id="after-metric-error">—</span>
+              </div>
+              <div class="diff-item">
+                <span class="diff-label">DB Connections</span>
+                <span class="diff-value-green" id="after-metric-db">—</span>
+              </div>
+              <div class="diff-item">
+                <span class="diff-label">Response Time</span>
+                <span class="diff-value-green" id="after-metric-resp">—</span>
+              </div>
+              <div class="diff-item">
+                <span class="diff-label">Query Latency</span>
+                <span class="diff-value-green" id="after-metric-latency">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FINAL RECOVERY VERIFIED BANNER (Section 45) -->
+        <div class="ares-verified-box" id="ares-verified-box" style="display: none;">
+          <div class="verified-header">
+            <span class="verified-icon">🟢</span>
+            <span class="verified-title">ARES RECOVERY VERIFIED</span>
+          </div>
+          <div class="verified-grid">
+            <div>Incident: <b id="verif-box-id">INC-2026-001</b></div>
+            <div>Root Cause: <b id="verif-box-rc">DB Connection Pool Saturation</b></div>
+            <div>Remediation: <code id="verif-box-action">restart_database</code></div>
+            <div>Verification: <span class="text-neon-green">PASSED</span></div>
+            <div>Error Rate: <b id="verif-box-error">62.4% → 0.4%</b></div>
+            <div>Connections: <b id="verif-box-conn">99 → 24</b></div>
+            <div>Tokens Used: <b id="verif-box-tokens">1,010</b></div>
+            <div>Replans: <b id="verif-box-replans">0</b></div>
+          </div>
+          <div class="verified-buttons">
+            <button class="btn btn-outline" onclick="openPostmortemModal()">📋 View Postmortem</button>
+            <button class="btn btn-outline" onclick="openAuditModal()">📜 View Audit Trail</button>
+            <button class="btn btn-outline" onclick="openTokenModal()">💳 View Token Ledger</button>
+            <button class="btn btn-reset" onclick="resetSystem()">🔄 Reset System</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- EVIDENCE & HYPOTHESES DUAL GRID -->
+      <div class="evidence-hypotheses-grid" id="evidence-section">
+
+        <!-- COLLECTED EVIDENCE -->
+        <section class="card evidence-card">
+          <div class="card-header-flex">
+            <div>
+              <h2 class="card-title">🔍 COLLECTED EVIDENCE</h2>
+              <span class="card-subtitle">Observability Agent Telemetry Correlation</span>
+            </div>
+            <span class="badge-count" id="evidence-count-badge">0 Items</span>
+          </div>
+          <div class="evidence-table-container">
+            <table class="data-table" id="evidence-table">
+              <thead>
+                <tr>
+                  <th>Signal</th>
+                  <th>Value</th>
+                  <th>Status</th>
+                  <th>Support</th>
+                </tr>
+              </thead>
+              <tbody id="evidence-tbody">
+                <tr><td colspan="4" class="text-muted">Awaiting incident telemetry...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- COMPETING HYPOTHESES -->
+        <section class="card hypotheses-card">
+          <div class="card-header-flex">
+            <div>
+              <h2 class="card-title">💡 COMPETING HYPOTHESES</h2>
+              <span class="card-subtitle">Investigation Agent Alternative Evaluation</span>
+            </div>
+          </div>
+          <div class="hypotheses-list" id="hypotheses-container">
+            <div class="text-muted text-center py-4">No active hypotheses generated yet.</div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- "WHY DID ARES CHOOSE THIS ROOT CAUSE?" (EXPLAINABILITY PANEL) -->
+      <section class="card explainability-card" id="explainability-panel">
+        <div class="card-header-flex">
+          <div>
+            <h2 class="card-title">🎯 WHY DID ARES CHOOSE THIS ROOT CAUSE?</h2>
+            <span class="card-subtitle">Transparent Decision Reasoning &amp; Evidence Matrix</span>
+          </div>
+          <span class="confidence-badge" id="root-cause-confidence">Confidence: 95%</span>
+        </div>
+
+        <div class="rc-title-display" id="root-cause-title">
+          Awaiting root cause determination...
+        </div>
+
+        <p class="rc-explanation-display" id="root-cause-explanation">
+          Investigation agent will weigh evidence matrix to isolate the decisive failure mechanism.
+        </p>
+
+        <!-- ALTERNATIVE HYPOTHESES CONSIDERED & REJECTED -->
+        <div class="alternatives-box">
+          <div class="alt-title">ALTERNATIVE HYPOTHESES RULED OUT:</div>
+          <div class="alt-list" id="alternatives-list">
+            <div class="text-muted">No hypotheses evaluated yet.</div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- RIGHT COLUMN: SRE TELEMETRY, TOKEN LEDGER & AGENT TIMELINE -->
+    <div class="dash-column col-side">
+
+      <!-- LIVE TELEMETRY GAUGES -->
+      <section class="card telemetry-card">
+        <h2 class="card-title">CLUSTER TELEMETRY</h2>
+        <div class="telemetry-grid">
+          <div class="telem-item" id="gauge-db-conn">
+            <span class="telem-label">DB CONNECTIONS</span>
+            <div class="telem-value" id="telem-val-db">24/100</div>
+            <div class="telem-bar-track">
+              <div class="telem-bar-fill" id="telem-bar-db" style="width: 24%;"></div>
+            </div>
+          </div>
+
+          <div class="telem-item" id="gauge-api-error">
+            <span class="telem-label">API ERROR RATE</span>
+            <div class="telem-value" id="telem-val-err">0.2%</div>
+            <div class="telem-bar-track">
+              <div class="telem-bar-fill telem-bar-red" id="telem-bar-err" style="width: 1%;"></div>
+            </div>
+          </div>
+
+          <div class="telem-item" id="gauge-latency">
+            <span class="telem-label">RESPONSE TIME</span>
+            <div class="telem-value" id="telem-val-resp">185 ms</div>
+            <div class="telem-bar-track">
+              <div class="telem-bar-fill" id="telem-bar-resp" style="width: 12%;"></div>
+            </div>
+          </div>
+
+          <div class="telem-item" id="gauge-query-latency">
+            <span class="telem-label">QUERY LATENCY</span>
+            <div class="telem-value" id="telem-val-query">180 ms</div>
+            <div class="telem-bar-track">
+              <div class="telem-bar-fill" id="telem-bar-query" style="width: 10%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="services-status-row">
+          <div class="svc-status" id="svc-api">API Gateway: <b class="text-neon-green">ONLINE</b></div>
+          <div class="svc-status" id="svc-db">PostgreSQL: <b class="text-neon-green">HEALTHY</b></div>
+          <div class="svc-status" id="svc-ver">Version: <b id="svc-version-val">v2.4.1</b></div>
+        </div>
+      </section>
+
+      <!-- TOKEN USAGE PANEL (CRITICAL FEATURE) -->
+      <section class="card token-card">
+        <div class="card-header-flex">
+          <div>
+            <h2 class="card-title">⚡ TOKEN USAGE BUDGET</h2>
+            <span class="card-subtitle">AI Operation Computation Accounting</span>
+          </div>
+          <button class="btn-xs btn-outline" onclick="openTokenModal()">Ledger</button>
+        </div>
+
+        <!-- Token Balance Progress Bar -->
+        <div class="token-main-gauge">
+          <div class="token-gauge-header">
+            <span>Available Balance</span>
+            <span class="token-fraction"><b id="token-balance-val">10,000</b> / 10,000</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" id="token-progress-bar" style="width: 100%;"></div>
+          </div>
+          <div class="token-substats">
+            <span>Tokens Consumed: <b id="token-consumed-val">0</b></span>
+            <span>Est. Remaining: <b id="token-est-rem">10,000</b></span>
+          </div>
+        </div>
+
+        <!-- Low Token Warning Banner -->
+        <div class="token-warning-box" id="token-warning-box" style="display: none;">
+          <span class="tw-icon">⚠️</span>
+          <div class="tw-text">
+            <b>TOKEN BUDGET EXHAUSTED</b>
+            <div>ARES cannot safely continue. Add tokens or reset session.</div>
+          </div>
+          <button class="btn btn-xs btn-success" onclick="addTokens(5000)">+ Add 5,000</button>
+        </div>
+
+        <!-- Agent Token Breakdown -->
+        <div class="agent-token-list">
+          <div class="agent-token-item">
+            <span class="at-name">Observability</span>
+            <div class="at-bar-track"><div class="at-bar-fill" id="at-bar-obs" style="width: 0%;"></div></div>
+            <span class="at-val" id="at-val-obs">0</span>
+          </div>
+          <div class="agent-token-item">
+            <span class="at-name">Investigation</span>
+            <div class="at-bar-track"><div class="at-bar-fill" id="at-bar-inv" style="width: 0%;"></div></div>
+            <span class="at-val" id="at-val-inv">0</span>
+          </div>
+          <div class="agent-token-item">
+            <span class="at-name">Knowledge</span>
+            <div class="at-bar-track"><div class="at-bar-fill" id="at-bar-know" style="width: 0%;"></div></div>
+            <span class="at-val" id="at-val-know">0</span>
+          </div>
+          <div class="agent-token-item">
+            <span class="at-name">Root Cause</span>
+            <div class="at-bar-track"><div class="at-bar-fill" id="at-bar-rc" style="width: 0%;"></div></div>
+            <span class="at-val" id="at-val-rc">0</span>
+          </div>
+          <div class="agent-token-item">
+            <span class="at-name">Planner</span>
+            <div class="at-bar-track"><div class="at-bar-fill" id="at-bar-plan" style="width: 0%;"></div></div>
+            <span class="at-val" id="at-val-plan">0</span>
+          </div>
+          <div class="agent-token-item">
+            <span class="at-name">Execution</span>
+            <div class="at-bar-track"><div class="at-bar-fill" id="at-bar-exec" style="width: 0%;"></div></div>
+            <span class="at-val" id="at-val-exec">0</span>
+          </div>
+          <div class="agent-token-item">
+            <span class="at-name">Verification</span>
+            <div class="at-bar-track"><div class="at-bar-fill" id="at-bar-ver" style="width: 0%;"></div></div>
+            <span class="at-val" id="at-val-ver">0</span>
+          </div>
+          <div class="agent-token-item">
+            <span class="at-name">Postmortem</span>
+            <div class="at-bar-track"><div class="at-bar-fill" id="at-bar-post" style="width: 0%;"></div></div>
+            <span class="at-val" id="at-val-post">0</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- AGENT TIMELINE -->
+      <section class="card timeline-card">
+        <div class="card-header-flex">
+          <div>
+            <h2 class="card-title">⏱️ AGENT TIMELINE</h2>
+            <span class="card-subtitle">Real-time Autonomous Event Log</span>
+          </div>
+        </div>
+        <div class="timeline-container" id="timeline-list">
+          <div class="timeline-empty">Awaiting incident events...</div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL WINDOWS                                                         -->
+  <!-- ===================================================================== -->
+
+  <!-- POSTMORTEM REPORT MODAL -->
+  <div class="modal-overlay" id="modal-postmortem" style="display:none;">
+    <div class="modal-content modal-lg">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-icon">📋</span>
+          <div>
+            <h3 class="modal-title" id="pm-modal-title">SRE Incident Postmortem Report</h3>
+            <span class="modal-subtitle" id="pm-modal-subtitle">Official Retrospective &amp; Corrective Action Plan</span>
+          </div>
+        </div>
+        <button class="modal-close" onclick="closePostmortemModal()">&times;</button>
+      </div>
+
+      <div class="modal-body postmortem-body" id="postmortem-content">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="downloadPostmortem('json')">Download JSON</button>
+        <button class="btn btn-primary" onclick="downloadPostmortem('markdown')">Download Markdown</button>
+        <button class="btn btn-secondary" onclick="closePostmortemModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOKEN TRANSACTION HISTORY MODAL -->
+  <div class="modal-overlay" id="modal-token-history" style="display:none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-icon">💳</span>
+          <div>
+            <h3 class="modal-title">Token Transaction Ledger</h3>
+            <span class="modal-subtitle">Immutable AI Computation Audit Ledger</span>
+          </div>
+        </div>
+        <button class="modal-close" onclick="closeTokenModal()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <table class="data-table" id="token-tx-table">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Agent</th>
+              <th>Operation</th>
+              <th>Tokens Used</th>
+              <th>Remaining</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="token-tx-tbody">
+            <!-- Populated via API -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-success" onclick="addTokens(5000)">+ Deposit 5,000 Tokens</button>
+        <button class="btn btn-secondary" onclick="closeTokenModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUDIT LOG MODAL -->
+  <div class="modal-overlay" id="modal-audit-log" style="display:none;">
+    <div class="modal-content modal-lg">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-icon">📜</span>
+          <div>
+            <h3 class="modal-title">System Audit Log</h3>
+            <span class="modal-subtitle">Cryptographically Traceable SRE Security &amp; Safety Audit Trail</span>
+          </div>
+        </div>
+        <button class="modal-close" onclick="closeAuditModal()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <table class="data-table" id="audit-table">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Actor</th>
+              <th>Action</th>
+              <th>Risk Level</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody id="audit-tbody">
+            <!-- Populated via API -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeAuditModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

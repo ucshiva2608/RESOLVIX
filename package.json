@@ -1,0 +1,19 @@
+{
+  "name": "ares-autonomous-response-engineering-system",
+  "version": "1.0.0",
+  "description": "ARES — Autonomous Response Engineering System: Detect. Investigate. Decide. Act. Verify.",
+  "scripts": {
+    "dev": "python3 run_ares.py",
+    "start": "python3 run_ares.py",
+    "test": "python3 -m pytest -v"
+  },
+  "keywords": [
+    "ares",
+    "sre",
+    "autonomous-response",
+    "incident-investigation",
+    "ai-agents"
+  ],
+  "author": "ARES Engineering Team",
+  "license": "MIT"
+}
